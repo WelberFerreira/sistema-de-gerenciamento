@@ -128,13 +128,13 @@ def getSomaVazOutorgas(id_river):
     return vazoes
 
 ################## Retorna soma das vazoes das outorgas --- new
-def getOutorgas(id_river):
+def getInfoOutorgas(id_river):
     global cursor
     cursor.execute( "SELECT " +
 		   "out_cpf, out_cnpj, out_end_emprend, out_q_jan, out_q_fev, out_q_mar, " +
 		   "out_q_abr, out_q_mai, out_q_jun, out_q_jul, out_q_ago, out_q_set, " +
 		   "out_q_out, out_q_nov, out_q_dez " +
-		   "SELECT sum(out_vaz) FROM pghgt_outorga out, " +
+		   "FROM pghgt_outorga out, " +
 		   "(SELECT drs.drs_pk, drs.drs_hca_pk as hca_pk, hca.hca_gm as hca_gm " +
 		   "FROM pghgt_drainage_stretch drs, pghgt_hydrographic_catchment_area hca, " +
 		   "(SELECT pghfn_upstreamstretches(" + str(id_river) + ") as drs_pk) as a " +
@@ -142,24 +142,25 @@ def getOutorgas(id_river):
 		   "WHERE ST_INTERSECTS(a.hca_gm, out.out_gm) AND (a.hca_gm && out.out_gm)"
 		  )
 
-    for row in cursor:
-	vaz = row[0]
-    return vaz
+    outorgas  = cursor.fetchall()
+    return outorgas
 
 ################## Retorna qmmm da uh
-def getQmmm(x,y):
+
+def getQmmmByXY(x,y):
     global cursor
-    cursor.execute( "SELECT DISTINCT" +
-			"qmmm_jan, qmmm_fev, qmmm_mar, qmmm_abr, qmmm_mai, "
-			"qmmm_jun, qmmm_jul, qmmm_ago, qmmm_set, qmmm_out, "
-			"qmmm_nov, qmmm_dez FROM pghgt_uh as uh "
-			"WHERE ST_INTERSECTS(uh.uh_gm, ST_GeomFromText('POINT(" + str(x) + " " + str(y) + ")', 4291)) "
+    cursor.execute( "SELECT DISTINCT area, " +
+			"qmmm_jan, qmmm_fev, qmmm_mar, qmmm_abr, qmmm_mai, " +
+			"qmmm_jun, qmmm_jul, qmmm_ago, qmmm_set, qmmm_out, " +
+			"qmmm_nov, qmmm_dez FROM pghgt_uh as uh " +
+			"WHERE ST_INTERSECTS(uh.uh_gm, ST_GeomFromText('POINT(" + str(x) + " " + str(y) + ")', 4291)) " +
 			"AND (uh.uh_gm && ST_GeomFromText('POINT(" + str(x) + " " + str(y) + ")', 4291))"
 		  )
-    qmmm = []
-    for row in cursor:
-	for i in row:
-	        qmmm.append(i)
+   #qmmm = []
+    qmmm = cursor.fetchall()
+   #for row in cursor:
+	#for i in row:
+	       #qmmm.append(i)
     return qmmm	
 	
 ################## Retorna outorgas --- old
@@ -200,7 +201,7 @@ def getOut_by_cpf(cpf):
            " vaz_abril, vaz_maio, vaz_junho," +
            " vaz_julho, vaz_agosto, vaz_setembro," +
            " vaz_outubro, vaz_novembro, vaz_dezembro" +
-           " from out_teste WHERE cpf = %s", (cpf,)) # para o psycopg2 tem que ter esse conversor de %s para adequar ńumero para string
+           " from out_teste WHERE cpf = %s", (cpf,)) # para o psycopg2 tem que ter esse conversor de %s para adequar Å„umero para string
     dados = []   
     for row in cursor:
         dados.append(row)
@@ -216,7 +217,7 @@ def getOut_by_id(id):
            " vaz_abril, vaz_maio, vaz_junho," +
            " vaz_julho, vaz_agosto, vaz_setembro," +
            " vaz_outubro, vaz_novembro, vaz_dezembro" +
-           " from out_teste WHERE out_id = %s", (id,)) # para o psycopg2 tem que ter esse conversor de %s para adequar ńumero para string
+           " from out_teste WHERE out_id = %s", (id,)) # para o psycopg2 tem que ter esse conversor de %s para adequar Å„umero para string
     dados = []   
     for row in cursor:
         dados.append(row)
