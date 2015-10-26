@@ -7,7 +7,7 @@ import os.path, sys
 import psycopg2
 import funcoesAcessaBanco
 
-connection = psycopg2.connect("dbname=outorgas port=5433 user=pi password=lua2012")
+connection = psycopg2.connect("dbname=outorgas port=#### user=pi password=####")
 cursor = connection.cursor()
 
 FOOTER = "</body></html>"
