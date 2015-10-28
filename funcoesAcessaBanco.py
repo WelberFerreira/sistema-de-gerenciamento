@@ -13,11 +13,11 @@ import psycopg2
 
 ##############################################################
 # Edit these constants as necessary to match your setup.
-POSTGIS_DBNAME = "outorgas"
-POSTGIS_USERNAME = "pi"
-POSTGIS_PASSWORD = "lua2012"
+POSTGIS_DBNAME = ""
+POSTGIS_USERNAME = ""
+POSTGIS_PASSWORD = ""
 # ADICIONEI A PORTA
-POSTGIS_PORT = "5433"
+POSTGIS_PORT = ""
 #############################################################
 ### alterei o nome da funcao de open para open_conection
 def open_conection():
