@@ -1,0 +1,103 @@
+var Parque = /* color: #98ff00 */ee.Geometry.Polygon(
+        [[[-48.02129448351866, -15.556284926968578],
+          [-48.107811817503034, -15.611842741442805],
+          [-48.116051563596784, -15.736131816718766],
+          [-48.066613087034284, -15.7929621810965],
+          [-47.97185600695616, -15.804854893107164],
+          [-47.89220512804991, -15.755958169463868],
+          [-47.822167286253034, -15.700439511357619],
+          [-47.877098926878034, -15.626391112664164]]]),
+    mod15 = ee.ImageCollection("MODIS/006/MCD15A3H");
+
+
+
+print(mod15)
+print(Parque)
+
+
+ // define study period
+var startdate = ee.Date.fromYMD(2010,1,1);
+var enddate = ee.Date.fromYMD(2011,12,31);
+ 
+
+//  filter data on location and
+var modFpar = mod15.filterDate(startdate,enddate)
+                   .filterBounds(Parque)
+                   .select("Fpar")
+ 
+//  filter data on location and
+var modLAI = mod15.filterDate(startdate,enddate)
+                   .filterBounds(Parque)
+                   .select("Lai")
+
+//Step 2
+                   
+  // create a list with all months
+var months = ee.List.sequence(1,12);
+ 
+// create a list with all years
+var years = ee.List.sequence(2010,2011);
+ 
+// create monthly maps
+var monthlyLAI =  ee.ImageCollection.fromImages(
+  years.map(function (y) {
+  return months.map(function(m){
+  var w =  modLAI.filter(ee.Filter.calendarRange(y, y, 'year'))
+           .filter(ee.Filter.calendarRange(m, m, 'month'))
+           .mean();
+  return w.set('year', y)
+           .set('month', m)
+           .set('date', ee.Date.fromYMD(y,m,1))
+           .set('system:time_start',ee.Date.fromYMD(y,m,1)) 
+ 
+});
+}).flatten());
+ 
+// print the output
+print(monthlyLAI)
+
+//Step 3
+
+
+ 
+// Scale the mod15 data
+var scalemod15 = function(img){
+  return img.multiply(0.01)
+}
+ 
+// Scale every image in the collection
+monthlyLAI = monthlyLAI.map(scalemod15)
+
+//Step 4
+// add layers to canvas
+
+var colorLAI = {min:0, max:0.8, palette:"befffc,6ae9ff,374eff,6f00ff"};
+Map.addLayer(monthlyLAI.mean().clip(Parque),colorLAI,"LAI");
+
+
+//Step 
+// get metadata
+var first = ee.Image(monthlyLAI.first());
+var crs = first.projection().crs().getInfo();
+var scale = 1000;
+var count =  monthlyLAI.size().getInfo();
+ 
+// set the counter
+var counter = 0;
+ 
+// loop through the year
+for (var y = 2000; y < 2002 ; y++) {
+  // loop through the months
+  for (var m = 1; m < 12 ; m++) {
+ 
+  // get the image
+  var img = ee.Image(monthlyLAI.toList(1, counter).get(0));
+ 
+  // store the image
+  Export.image.toDrive({
+       image: img,
+       description: y.toString() + m.toString(),
+       scale: 1000,
+    region: Parque
+ });
+}}
